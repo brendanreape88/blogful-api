@@ -2,7 +2,7 @@ const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
 
-describe('Articles Endpoints', function() {
+describe.only('Articles Endpoints', function() {
     let db
   
     before('make knex instance', () => {
@@ -16,6 +16,8 @@ describe('Articles Endpoints', function() {
     after('disconnect from db', () => db.destroy())
   
     before('clean the table', () => db('blogful_articles').truncate())
+
+    afterEach('cleanup', () => db('blogful_articles').truncate())
 
     context('Given there are articles in the database', () => {
          const testArticles = [
@@ -58,8 +60,15 @@ describe('Articles Endpoints', function() {
         it('GET /articles responds with 200 and all of the articles', () => {
              return supertest(app)
                .get('/articles')
-               .expect(200)
-               // TODO: add more assertions about the body
+               .expect(200, testArticles)
+        })
+
+        it('GET /articles/:article_id responds with 200 and the specified article', () => {
+             const articleId = 2
+             const expectedArticle = testArticles[articleId - 1]
+             return supertest(app)
+               .get(`/articles/${articleId}`)
+               .expect(200, expectedArticle)
         })
     })
 })
